@@ -57,7 +57,7 @@ class Demo extends React.Component<{}, DemoState> {
   }
 
   componentDidMount () {
-    fetch('/collapsed-perf.txt')
+    fetch('collapsed-perf.txt')
       .then(res => res.text())
       .then(body => {
         this.setState({
