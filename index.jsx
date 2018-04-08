@@ -85,7 +85,6 @@ const Bar = styled.div`
 const Column = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
 `
 
 const Label = styled.span`
@@ -107,10 +106,10 @@ class FlameGraph extends React.PureComponent {
             width: (d.count / total) * 100 + '%'
           }}
         >
-          <FlameGraph data={d.children} onBarClick={this.props.onBarClick} />
           <Bar key={i} title={d.name} onClick={() => this.props.onBarClick(d, data)}>
             {<Label>{d.name}</Label>}
           </Bar>
+          <FlameGraph data={d.children} onBarClick={this.props.onBarClick} />
         </Column>
       )}
     </Flame>
