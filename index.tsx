@@ -3,7 +3,18 @@ import { render } from 'react-dom'
 import styled from 'styled-components'
 import { groupBy, last, initial, sum } from 'lodash'
 
-const parse = input => {
+interface PreStackFrame {
+  stack: string[],
+  count: number
+}
+
+interface StackFrame {
+  name: string,
+  count: number,
+  children: StackFrame[]
+}
+
+function parse (input: string): PreStackFrame[] {
   return input.split('\n').map(line => {
     const splits = line.split(' ')
     return {
@@ -13,9 +24,9 @@ const parse = input => {
   })
 }
 
-function nest (input) {
+function nest (input: PreStackFrame[]): StackFrame[] {
   const data = groupBy(input, p => p.stack[0])
-  const output = Object.keys(data).reduce((result, name) => {
+  return Object.keys(data).reduce((result, name) => {
     if (!name) return result
 
     data[name] = data[name].map(entry => {
@@ -29,10 +40,14 @@ function nest (input) {
       children: data[name].length ? nest(data[name]) : []
     })
   }, [])
-  return output
 }
 
-class Demo extends React.Component {
+interface DemoState {
+  data: StackFrame[] | null,
+  selected: StackFrame[] | null
+}
+
+class Demo extends React.Component<{}, DemoState> {
   constructor (props) {
     super(props)
     this.state = {
@@ -93,9 +108,14 @@ const Label = styled.span`
   padding: 0 4px;
 `
 
-class FlameGraph extends React.PureComponent {
+interface FlameGraphProps {
+  data: StackFrame[],
+  onBarClick: ((frame: StackFrame, siblings: StackFrame[]) => void)
+}
+
+class FlameGraph extends React.PureComponent<FlameGraphProps, {}> {
   render () {
-    const { data } = this.props
+    const { data, onBarClick } = this.props
     const total = sum(data.map(d => d.count))
 
     return <Flame>
@@ -106,10 +126,10 @@ class FlameGraph extends React.PureComponent {
             width: (d.count / total) * 100 + '%'
           }}
         >
-          <Bar key={i} title={d.name} onClick={() => this.props.onBarClick(d, data)}>
+          <Bar key={i} title={d.name} onClick={() => onBarClick(d, data)}>
             {<Label>{d.name}</Label>}
           </Bar>
-          <FlameGraph data={d.children} onBarClick={this.props.onBarClick} />
+          <FlameGraph data={d.children} onBarClick={onBarClick} />
         </Column>
       )}
     </Flame>
